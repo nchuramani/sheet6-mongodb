@@ -1,6 +1,7 @@
 package logic;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -131,7 +132,9 @@ public class MovieService extends MovieServiceBase {
 	 */
 	public DBCursor getBestMovies(int minVotes, double minRating, int limit) {
 		// TODO: implemented
-		DBObject query = new BasicDBObject("votes", new BasicDBObject("&gte", minVotes)).append("rating",  new BasicDBObject("&gte", minRating));
+		DBObject query = new BasicDBObject();
+		query.put("votes", new BasicDBObject("$gte", minVotes));
+		query.put("rating",  new BasicDBObject("$gte", minRating));
 		DBCursor best = movies.find(query).sort(new BasicDBObject("rating", -1)).limit(limit);
 		return best;
 	}
@@ -150,14 +153,14 @@ public class MovieService extends MovieServiceBase {
 		String[] genres = genreList.split(",");
 		DBCursor result = null;
 		BasicDBObject query = new BasicDBObject();
-
+		ArrayList <BasicDBObject> dbObjs = new ArrayList<BasicDBObject>();
 		//TODO: implemented
 		
 		for(int i=0;i<genres.length;i++){
 			String genre = genres[i].trim();
-			query.append("genre", new BasicDBObject("$and",genre));
+			dbObjs.add(new BasicDBObject("genre", genre));
 		}
-		
+		query.put("$and",dbObjs);		
 		result = movies.find(query).limit(limit);
 		return result;
 	}
@@ -230,7 +233,7 @@ public class MovieService extends MovieServiceBase {
 	 */
 	public void saveMovieComment(String id, String comment) {
 		//TODO: implemented
-		BasicDBObject toUpdate = new BasicDBObject("comment", new BasicDBObject("$set", comment));
+		BasicDBObject toUpdate = new BasicDBObject("$set", new BasicDBObject("comment", comment));
 		BasicDBObject query = new BasicDBObject("_id", id);
 		movies.update(query, toUpdate);
 
